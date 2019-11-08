@@ -1,0 +1,1 @@
+[y,Fs]= audioread ('data'); %läsa in ljudfil
