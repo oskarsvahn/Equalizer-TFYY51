@@ -1,4 +1,5 @@
-[y,Fs] = audioread('1.1World_of_Goo.wav');  %Läser ljudfil
-L = length(y);                              %Längden på y vektorn
-T = 1/Fs;                                   %Sampling period
-t = (0:L-1)*T;                              %Tids vektorn
+[A,B,C,D] = butter(0,[125 125]/250); %påverkar ett filter mellan 0-250 hz och släpper igenom 125Hz. 
+d = designfilt('bandpassiir','FilterOrder',20,'HalfPowerFrequency1',125,'HalfPowerFrequency2',125,'SampleRate',1500);
+sos = ss2sos(A,B,C,D);
+fvt = fvtool(sos,d,'Fs',1500);
+legend(fvt,'butter','designfilt')
