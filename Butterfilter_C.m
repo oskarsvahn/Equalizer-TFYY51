@@ -1,8 +1,8 @@
 fc = 300;
-fs = 42000; %kommer behövas ändra beroende på vilken samplinghastighet vi har.
 
 [b125,a125] = butter(5,[120/(fs/2), 130/(fs/2)]); %Filter för 125
 freqz(b125,a125);
+hold on;
 
 [b250,a250] = butter(5,[245/(fs/2), 255/(fs/2)]);
 freqz(b250,a250);
@@ -31,5 +31,7 @@ freqz(b8000,a8000);
 [b14000,a14000] = butter(5,[13995/(fs/2), 14005/(fs/2)]);
 freqz(b14000,a14000);
 
-dataIn = randn(1000,1);
+[y,fs] = audioread('1.1World_of_Goo.wav');  %Ger frekvensen 
+dataIn = audioread('1.1World_of_Goo.wav');  %Tar in sjävla ljudfilen
+T = 1/fs;                                       %time sampeling
 dataOut = filter(b,a,dataIn);
