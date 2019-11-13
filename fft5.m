@@ -8,35 +8,33 @@ filterValues=[125,0;
               6000, 2;
               8000,3;
               12000,3;
-              20000,3];
+              20000,3];             %Just nu filtervärden i kolonn 2(ger diskant ljud just nu), tänker att det blir variabler till sliders sen
           
           
-x = filterValues(:,1); 
-y = filterValues(:,2);
-FFTLength=40000;
+x = filterValues(:,1);          %X koordinaterna för frekvenstabell
+y = filterValues(:,2);          %Vad vi multiplicerar med
+FFTLength=40000;                %Punkter i frekvensspektrum
 
-Fs=44100;
-xq = 1:1:FFTLength/2;
+n = 1:1:FFTLength/2;            %Skapar vårt halva frekvensspektrum
 
+filter = interp1(x,y,n, 'cubic');   %skapar ett filter utifrån värdena
 
-filter = []
+plot(x,y,'o',n,filter,':.');        %Plottar bearbetade kurvan
+xlim([0 20000]);                    %begränsar mellan 0-20000
+title('(Default) Linear Interpolation');        %titel på graf
+filter = [fliplr(filter), filter ]';        %Skapar speglat filter med gamla filtret
 
-filter = interp1(x,y,xq, 'cubic');
+[rawData, Fs]= audioread('Ljudfiler/1.1World_of_Goo.wav');      %laddar in ljud
 
-plot(x,y,'o',xq,filter,':.');
-xlim([0 20000]);
-title('(Default) Linear Interpolation');
-filter = [fliplr(filter), filter ]';
-%recObj = audiorecorder(Fs, 8, 1)
-%recordblocking(recObj, T);
-%rawData = getaudiodata(recObj);%Inspelning
-[rawData, Fs]= audioread('Ljudfiler/1.1World_of_Goo.wav');
+frec = stft(rawData,Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength);  %Skapar fönster i tidsdomän och gör fourieranalys i fönstret och sen flyttar fönstret framåt och upprepar
 
-frec = stft(rawData,Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength);
-frec2=frec.*filter;
-complexOutput = istft(frec2, Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength);
-output=real(complexOutput)+imag(complexOutput);
-sound(output, Fs);
+frec2=frec.*filter;     %applicera filter    
+
+complexOutput = istft(frec2, Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength); %lika som tidigare fast tillbaka till tidsdomän
+
+output=real(complexOutput)+imag(complexOutput);     %Lägger ihop realdel med komplexdel
+
+sound(output, Fs);      %Spelar upp behandlat ljud
 
 
           
