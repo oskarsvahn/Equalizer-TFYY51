@@ -1,3 +1,6 @@
+[y,fs] = audioread('1.1World_of_Goo.wav');  %Ger frekvensen 
+dataIn = audioread('1.1World_of_Goo.wav');  %Tar in sjävla ljudfilen
+T = 1/fs;                                       %time sampeling
 
 [b125,a125] = butter(3,[105/(fs/2), 140/(fs/2)]); %Filter för 125
 freqz(b125,a125);
@@ -30,7 +33,7 @@ freqz(b8000,a8000);
 [b12000,a12000] = butter(10,[11000/(fs/2),14500/(fs/2)]);
 freqz(b12000,a12000);
 
-[b20000,a20000] = butter(10,[18000/(fs/2),23000/(fs/2)]);
+[b20000,a20000] = butter(9,[18000/(fs/2),21000/(fs/2)]);
 freqz(b20000,a20000);
 
 dataOut125 = filter(b125,a125,dataIn);
@@ -45,6 +48,3 @@ dataOut8000 = filter(b8000,a8000,dataIn);
 dataOut14000 = filter(b12000,a12000,dataIn);
 dataOut20000 = filter(b20000,a20000,dataIn);
 
-[y,fs] = audioread('1.1World_of_Goo.wav');  %Ger frekvensen 
-dataIn = audioread('1.1World_of_Goo.wav');  %Tar in sjävla ljudfilen
-T = 1/fs;                                       %time sampeling
