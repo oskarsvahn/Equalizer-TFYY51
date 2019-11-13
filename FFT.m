@@ -4,7 +4,7 @@
 
 
 dB=0.8
-Fs = 44000;    %Samplingshastighet
+Fs = 44100;    %Samplingshastighet
 filterValues=[0,1;
               600,0.1;
               1000,10;
