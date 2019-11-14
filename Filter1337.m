@@ -4,8 +4,8 @@ fc8=6980; fc9=7000; fc10=9980; fc11=10000; fc12=14800; fc13=15000; fc14=22000;
 dataIn = (y);
 
 [a,b] = butter(10,[fc/(fs/2),fc0/(fs/2)]);
-hold on
 freqz(a,b)
+hold on
 
 [c,d] = butter(3,[fc1/(fs/2), fc2/(fs/2)]);
 freqz(c,d)
