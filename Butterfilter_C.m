@@ -2,6 +2,7 @@
 dataIn = audioread('1.1World_of_Goo.wav');  %Tar in sjävla ljudfilen
 T = 1/fs;                                       %time sampeling
 
+
 [b125,a125] = butter(3,[105/(fs/2), 140/(fs/2)]); %Filter för 125
 freqz(b125,a125);
 hold on;
@@ -47,4 +48,6 @@ dataOut6000 = filter(b6000,a6000,dataIn);
 dataOut8000 = filter(b8000,a8000,dataIn);
 dataOut14000 = filter(b12000,a12000,dataIn);
 dataOut20000 = filter(b20000,a20000,dataIn);
+
+dataOut = dataOut125+dataOut250+dataOut500+dataOut1000+dataOut2000+dataOut3000+dataOut4000+dataOut6000+dataOut8000;
 
