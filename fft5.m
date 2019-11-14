@@ -10,14 +10,13 @@ filterValues=[125,0;
               12000,3;
               20000,3];             %Just nu filterv�rden i kolonn 2(ger diskant ljud just nu), t�nker att det blir variabler till sliders sen
           
-          
 x = filterValues(:,1);          %X koordinaterna f�r frekvenstabell
 y = filterValues(:,2);          %Vad vi multiplicerar med
 FFTLength=40000;                %Punkter i frekvensspektrum
 
 n = 1:1:FFTLength/2;            %Skapar v�rt halva frekvensspektrum
 
-filter = interp1(x,y,n, 'cubic');   %skapar ett filter utifr�n v�rdena
+filter = interp1(x,y,n, 'PCHIP');   %skapar ett filter utifr�n v�rdena
 
 plot(x,y,'o',n,filter,':.');        %Plottar bearbetade kurvan
 xlim([0 20000]);                    %begr�nsar mellan 0-20000
@@ -30,9 +29,8 @@ frec = stft(rawData,Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLe
 
 frec2=frec.*filter;     %applicera filter    
 
-complexOutput = istft(frec2, Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength); %lika som tidigare fast tillbaka till tidsdom�n
+output = istft(frec2, Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength, 'ConjugateSymmetric',true); %lika som tidigare fast tillbaka till tidsdom�n
 
-output=real(complexOutput)+imag(complexOutput);     %L�gger ihop realdel med komplexdel
 
 sound(output, Fs);      %Spelar upp behandlat ljud
 
