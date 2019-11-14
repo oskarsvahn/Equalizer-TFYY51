@@ -1,6 +1,6 @@
 [y,fs] = audioread('1.1World_of_Goo.wav');  %Ger frekvensen 
-dataIn = audioread('1.1World_of_Goo.wav');  %Tar in sjävla ljudfilen
 T = 1/fs;                                       %time sampeling
+
 
 [b125,a125] = butter(3,[105/(fs/2), 140/(fs/2)]); %Filter för 125
 freqz(b125,a125);
@@ -36,15 +36,29 @@ freqz(b12000,a12000);
 [b20000,a20000] = butter(9,[18000/(fs/2),21000/(fs/2)]);
 freqz(b20000,a20000);
 
-dataOut125 = filter(b125,a125,dataIn);
-dataOut250 = filter(b250,a250,dataIn);
-dataOut500 = filter(b500,a500,dataIn);
-dataOut1000 = filter(b1000,a1000,dataIn);
-dataOut2000 = filter(b2000,a2000,dataIn);
-dataOut3000 = filter(b3000,a3000,dataIn);
-dataOut4000 = filter(b4000,a4000,dataIn);
-dataOut6000 = filter(b6000,a6000,dataIn);
-dataOut8000 = filter(b8000,a8000,dataIn);
-dataOut14000 = filter(b12000,a12000,dataIn);
-dataOut20000 = filter(b20000,a20000,dataIn);
+dataOut125 = filter(b125,a125,y);
+dataOut250 = filter(b250,a250,y);
+dataOut500 = filter(b500,a500,y);
+dataOut1000 = filter(b1000,a1000,y);
+dataOut2000 = filter(b2000,a2000,y);
+dataOut3000 = filter(b3000,a3000,y);
+dataOut4000 = filter(b4000,a4000,y);
+dataOut6000 = filter(b6000,a6000,y);
+dataOut8000 = filter(b8000,a8000,y);
+dataOut14000 = filter(b12000,a12000,y);
+dataOut20000 = filter(b20000,a20000,y);
+
+A = 0;
+B = 0;
+C = 0;
+D = 0;
+E = 0;
+F = 0;
+G = 0;
+H = 1;
+I = 1;
+J = 1;
+K = 1;
+
+dataOut = A*dataOut125+B*dataOut250+C*dataOut500+D*dataOut1000+E*dataOut2000+F*dataOut3000+G*dataOut4000+H*dataOut6000+I*dataOut8000+J*dataOut14000+K*dataOut20000;
 
