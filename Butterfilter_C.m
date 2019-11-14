@@ -50,15 +50,14 @@ dataOut20000 = filter(b20000,a20000,y);
 
 A = 0;
 B = 0;
-C = 0;
-D = 0;
-E = 0;
-F = 0;
-G = 0;
+C = 1;
+D = 1;
+E = 1;
+F = 1;
+G = 1;
 H = 1;
-I = 1;
-J = 1;
-K = 1;
+I = 0;
+J = 0;
+K = 0;
 
 dataOut = A*dataOut125+B*dataOut250+C*dataOut500+D*dataOut1000+E*dataOut2000+F*dataOut3000+G*dataOut4000+H*dataOut6000+I*dataOut8000+J*dataOut14000+K*dataOut20000;
-
