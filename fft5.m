@@ -6,9 +6,9 @@ filterValues=[125,0;
               3000,1;
               4000,1.5;
               6000, 2;
-              8000,3;
-              12000,3;
-              20000,3];             %Just nu filterv�rden i kolonn 2(ger diskant ljud just nu), t�nker att det blir variabler till sliders sen
+              8000,1;
+              12000,0.5;
+              20000,0];             %Just nu filterv�rden i kolonn 2(ger diskant ljud just nu), t�nker att det blir variabler till sliders sen
           
 x = filterValues(:,1);          %X koordinaterna f�r frekvenstabell
 y = filterValues(:,2);          %Vad vi multiplicerar med
@@ -23,7 +23,7 @@ xlim([0 20000]);                    %begr�nsar mellan 0-20000
 title('(Default) Linear Interpolation');        %titel p� graf
 filter = [fliplr(filter), filter ]';        %Skapar speglat filter med gamla filtret
 
-[rawData, Fs]= audioread('Ljudfiler/1.1World_of_Goo.wav');      %laddar in ljud
+[rawData, Fs]= audioread('Ljudfiler/Talk1.wav');      %laddar in ljud
 
 frec = stft(rawData,Fs,'Window',hann(FFTLength,'periodic'),'OverlapLength',FFTLength/2,'FFTLength',FFTLength);  %Skapar f�nster i tidsdom�n och g�r fourieranalys i f�nstret och sen flyttar f�nstret fram�t och upprepar
 
