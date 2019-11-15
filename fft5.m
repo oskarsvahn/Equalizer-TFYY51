@@ -2,28 +2,17 @@
 filterValues=[125,1;
               250,1;
               500,1;
-              1000,5;
-              2000,10;
-              3000,15;
-              4000,20;
-              6000,30;
-              8000,40;
-              12000,40;
-              20000,40];             %Just nu filtervärden i kolonn 2, tänker att det blir variabler till sliders sen
+              1000,1;
+              2000,1;
+              3000,2;
+              4000,1;
+              6000,1;
+              8000,1;
+              12000,1;
+              20000,1];             %Just nu filtervärden i kolonn 2, tänker att det blir variabler till sliders sen
                     
 x = filterValues(:,1);          %X koordinaterna för frekvenstabell
-
-filterValues=[125,0;
-              250,0;
-              500,0.1;
-              1000,0.3;
-              2000,0.8;
-              3000,1;
-              4000,1.5;
-              6000, 2;
-              8000,1;
-              12000,0.5;
-              20000,0];             %Just nu filtervï¿½rden i kolonn 2(ger diskant ljud just nu), tï¿½nker att det blir variabler till sliders sen
+             %Just nu filtervï¿½rden i kolonn 2(ger diskant ljud just nu), tï¿½nker att det blir variabler till sliders sen
           
 x = filterValues(:,1);          %X koordinaterna fï¿½r frekvenstabell
 
