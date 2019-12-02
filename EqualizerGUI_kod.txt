@@ -1,0 +1,459 @@
+classdef EqualizerGUI < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure            matlab.ui.Figure
+        BrowseButton        matlab.ui.control.Button
+        Label_3             matlab.ui.control.Label
+        Slider_250          matlab.ui.control.Slider
+        Label_4             matlab.ui.control.Label
+        Slider_500          matlab.ui.control.Slider
+        Label_5             matlab.ui.control.Label
+        Slider_1000         matlab.ui.control.Slider
+        Label_6             matlab.ui.control.Label
+        Slider_2000         matlab.ui.control.Slider
+        Label_7             matlab.ui.control.Label
+        Slider_3000         matlab.ui.control.Slider
+        Label_8             matlab.ui.control.Label
+        Slider_4000         matlab.ui.control.Slider
+        Label_9             matlab.ui.control.Label
+        Slider_6000         matlab.ui.control.Slider
+        fileEditFieldLabel  matlab.ui.control.Label
+        fileEditField       matlab.ui.control.EditField
+        SetZeroGainsButton  matlab.ui.control.Button
+        Label_10            matlab.ui.control.Label
+        Slider_8000         matlab.ui.control.Slider
+        Label_11            matlab.ui.control.Label
+        Slider_12000        matlab.ui.control.Slider
+        Label_12            matlab.ui.control.Label
+        Slider_20000        matlab.ui.control.Slider
+        FrequencyLabel      matlab.ui.control.Label
+        Label_13            matlab.ui.control.Label
+        Slider_125          matlab.ui.control.Slider
+        UIAxes              matlab.ui.control.UIAxes
+        PlayButton          matlab.ui.control.Button
+        StopButton          matlab.ui.control.Button
+        Label_14            matlab.ui.control.Label
+        Slider_0            matlab.ui.control.Slider
+        Filter1Button       matlab.ui.control.Button
+        Filter2Button       matlab.ui.control.Button
+    end
+
+    
+    properties (Access = private)
+        Property; % Description
+        data;
+        filterValues;
+        startValues;
+        x;
+        y;
+        n;
+        FFTLength;
+    end
+    
+    methods (Access = private)
+        
+        function filterValues = UpdateFilter(app)
+            filterValues=[
+                0,app.Slider_0.Value;
+                125,app.Slider_125.Value;
+                250,app.Slider_250.Value;
+                500,app.Slider_500.Value;
+                1000,app.Slider_1000.Value;
+                2000,app.Slider_2000.Value;
+                3000,app.Slider_3000.Value;
+                4000,app.Slider_4000.Value;
+                6000,app.Slider_6000.Value;
+                8000,app.Slider_8000.Value;
+                12000,app.Slider_12000.Value;
+                20000,app.Slider_20000.Value];
+            
+            app.x = filterValues(:,1);          %X koordinaterna fï¿½r frekvenstabell
+            
+            app.y = filterValues(:,2);          %Vad vi multiplicerar med
+            
+            
+        end
+        
+        function  YData = DrawGraph(app)
+            YInterp = interp1(app.x, app.y, app.n, 'pchip');
+            %update graph
+            %app.UIAxes.Children(1).YData=app.y;
+            app.UIAxes.Children(1).YData=YInterp;
+
+        end
+        
+    end
+    
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Code that executes after component creation
+        function startupFcn(app)
+            app.FFTLength=40000;                %Punkter i frekvensspektrum
+            
+            app.n = 1:1:app.FFTLength/2;            %Skapar vårt halva frekvensspektrum
+            app.UpdateFilter();
+            
+            %plot(app.UIAxes,app.x,app.y ,'-*g')
+            
+            plot(app.UIAxes,app.n, zeros(1,20000) ,'-r');
+            
+        end
+
+        % Button pushed function: BrowseButton
+        function BrowseButtonPushed(app, event)
+            [file, path] = uigetfile('.\Ljudfiler\*.wav');
+            app.fileEditField.Value = file;
+            app.data=fullfile(path,file);
+            
+            
+        end
+
+        % Button pushed function: SetZeroGainsButton
+        function Reset(app, event)
+            app.Slider_0.Value = 0 ;
+            app.Slider_125.Value = 0 ;
+            app.Slider_250.Value = 0 ;
+            app.Slider_500.Value = 0 ;
+            app.Slider_1000.Value = 0 ;
+            app.Slider_2000.Value = 0 ;
+            app.Slider_3000.Value = 0 ;
+            app.Slider_4000.Value = 0 ;
+            app.Slider_6000.Value = 0 ;
+            app.Slider_8000.Value = 0 ;
+            app.Slider_12000.Value = 0 ;
+            app.Slider_20000.Value = 0 ;
+            app.UpdateFilter();
+        end
+
+        % Button pushed function: PlayButton
+        function PlayButtonPushed(app, event)
+            
+            filter = interp1(app.x,10.^app.y,app.n, 'PCHIP');   %skapar ett filter utifrån värdena
+
+            filter = [fliplr(filter), filter ]';        %Skapar speglat filter med gamla filtret
+      
+            [rawData, Fs]= audioread(app.data);      %laddar in ljud
+      
+            frec = stft(rawData,Fs,'Window',hann(app.FFTLength,'periodic'),'OverlapLength',app.FFTLength/2,'FFTLength',app.FFTLength);  %Skapar fönster i tidsdomän och gör fourieranalys i fönstret och sen flyttar fönstret framåt och upprepar
+            
+            frec2=frec.*filter;     %applicera filter
+            
+            output = istft(frec2, Fs,'Window',hann(app.FFTLength,'periodic'),'OverlapLength',app.FFTLength/2,'FFTLength',app.FFTLength, 'ConjugateSymmetric', true); %lika som tidigare fast tillbaka till tidsdomän
+            sound(output, Fs);
+            %Spelar upp behandlat ljud
+            
+        end
+
+        % Button pushed function: StopButton
+        function StopButtonPushed(app, event)
+            clear sound
+        end
+
+        % Value changed function: Slider_0, Slider_1000, 
+        % Slider_12000, Slider_125, Slider_2000, Slider_20000, 
+        % Slider_250, Slider_3000, Slider_4000, Slider_500, 
+        % Slider_6000, Slider_8000
+        function Slider_ValueChanging(app, event)
+            app.UpdateFilter();
+            app.DrawGraph();
+
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Color = [1 1 1];
+            app.UIFigure.Position = [100 10 1120 670];
+            app.UIFigure.Name = 'UI Figure';
+
+            % Create BrowseButton
+            app.BrowseButton = uibutton(app.UIFigure, 'push');
+            app.BrowseButton.ButtonPushedFcn = createCallbackFcn(app, @BrowseButtonPushed, true);
+            app.BrowseButton.Position = [856 558 100 22];
+            app.BrowseButton.Text = 'Browse';
+
+            % Create Label_3
+            app.Label_3 = uilabel(app.UIFigure);
+            app.Label_3.HorizontalAlignment = 'right';
+            app.Label_3.Position = [152 273 26 22];
+            app.Label_3.Text = '250';
+
+            % Create Slider_250
+            app.Slider_250 = uislider(app.UIFigure);
+            app.Slider_250.Limits = [-1 7];
+            app.Slider_250.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_250.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_250.Orientation = 'vertical';
+            app.Slider_250.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_250.Position = [145 308 3 349];
+
+            % Create Label_4
+            app.Label_4 = uilabel(app.UIFigure);
+            app.Label_4.HorizontalAlignment = 'right';
+            app.Label_4.Position = [215 273 26 22];
+            app.Label_4.Text = '500';
+
+            % Create Slider_500
+            app.Slider_500 = uislider(app.UIFigure);
+            app.Slider_500.Limits = [-1 7];
+            app.Slider_500.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_500.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_500.Orientation = 'vertical';
+            app.Slider_500.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_500.Position = [208 308 3 349];
+
+            % Create Label_5
+            app.Label_5 = uilabel(app.UIFigure);
+            app.Label_5.HorizontalAlignment = 'right';
+            app.Label_5.Position = [271 273 32 22];
+            app.Label_5.Text = '1000';
+
+            % Create Slider_1000
+            app.Slider_1000 = uislider(app.UIFigure);
+            app.Slider_1000.Limits = [-1 7];
+            app.Slider_1000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_1000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_1000.Orientation = 'vertical';
+            app.Slider_1000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_1000.Position = [270 308 3 349];
+
+            % Create Label_6
+            app.Label_6 = uilabel(app.UIFigure);
+            app.Label_6.HorizontalAlignment = 'right';
+            app.Label_6.Position = [329 273 32 22];
+            app.Label_6.Text = '2000';
+
+            % Create Slider_2000
+            app.Slider_2000 = uislider(app.UIFigure);
+            app.Slider_2000.Limits = [-1 7];
+            app.Slider_2000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_2000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_2000.Orientation = 'vertical';
+            app.Slider_2000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_2000.Position = [328 308 3 349];
+
+            % Create Label_7
+            app.Label_7 = uilabel(app.UIFigure);
+            app.Label_7.HorizontalAlignment = 'right';
+            app.Label_7.Position = [390 273 32 22];
+            app.Label_7.Text = '3000';
+
+            % Create Slider_3000
+            app.Slider_3000 = uislider(app.UIFigure);
+            app.Slider_3000.Limits = [-1 7];
+            app.Slider_3000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_3000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_3000.Orientation = 'vertical';
+            app.Slider_3000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_3000.Position = [389 308 3 349];
+
+            % Create Label_8
+            app.Label_8 = uilabel(app.UIFigure);
+            app.Label_8.HorizontalAlignment = 'right';
+            app.Label_8.Position = [448 273 32 22];
+            app.Label_8.Text = '4000';
+
+            % Create Slider_4000
+            app.Slider_4000 = uislider(app.UIFigure);
+            app.Slider_4000.Limits = [-1 7];
+            app.Slider_4000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_4000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_4000.Orientation = 'vertical';
+            app.Slider_4000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_4000.Position = [447 308 3 349];
+
+            % Create Label_9
+            app.Label_9 = uilabel(app.UIFigure);
+            app.Label_9.HorizontalAlignment = 'right';
+            app.Label_9.Position = [499 273 32 22];
+            app.Label_9.Text = '6000';
+
+            % Create Slider_6000
+            app.Slider_6000 = uislider(app.UIFigure);
+            app.Slider_6000.Limits = [-1 7];
+            app.Slider_6000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_6000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_6000.Orientation = 'vertical';
+            app.Slider_6000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_6000.Position = [498 308 3 349];
+
+            % Create fileEditFieldLabel
+            app.fileEditFieldLabel = uilabel(app.UIFigure);
+            app.fileEditFieldLabel.HorizontalAlignment = 'right';
+            app.fileEditFieldLabel.Position = [803 631 23 22];
+            app.fileEditFieldLabel.Text = 'file:';
+
+            % Create fileEditField
+            app.fileEditField = uieditfield(app.UIFigure, 'text');
+            app.fileEditField.Position = [837 631 274 22];
+
+            % Create SetZeroGainsButton
+            app.SetZeroGainsButton = uibutton(app.UIFigure, 'push');
+            app.SetZeroGainsButton.ButtonPushedFcn = createCallbackFcn(app, @Reset, true);
+            app.SetZeroGainsButton.Position = [993 558 100 22];
+            app.SetZeroGainsButton.Text = 'Set Zero Gains';
+
+            % Create Label_10
+            app.Label_10 = uilabel(app.UIFigure);
+            app.Label_10.HorizontalAlignment = 'right';
+            app.Label_10.Position = [561 273 32 22];
+            app.Label_10.Text = '8000';
+
+            % Create Slider_8000
+            app.Slider_8000 = uislider(app.UIFigure);
+            app.Slider_8000.Limits = [-1 7];
+            app.Slider_8000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_8000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_8000.Orientation = 'vertical';
+            app.Slider_8000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_8000.Position = [560 308 3 349];
+
+            % Create Label_11
+            app.Label_11 = uilabel(app.UIFigure);
+            app.Label_11.HorizontalAlignment = 'right';
+            app.Label_11.Position = [623 273 39 22];
+            app.Label_11.Text = '12000';
+
+            % Create Slider_12000
+            app.Slider_12000 = uislider(app.UIFigure);
+            app.Slider_12000.Limits = [-1 7];
+            app.Slider_12000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_12000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_12000.Orientation = 'vertical';
+            app.Slider_12000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_12000.Position = [629 308 3 349];
+
+            % Create Label_12
+            app.Label_12 = uilabel(app.UIFigure);
+            app.Label_12.HorizontalAlignment = 'right';
+            app.Label_12.Position = [686 273 39 22];
+            app.Label_12.Text = '20000';
+
+            % Create Slider_20000
+            app.Slider_20000 = uislider(app.UIFigure);
+            app.Slider_20000.Limits = [-1 7];
+            app.Slider_20000.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_20000.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_20000.Orientation = 'vertical';
+            app.Slider_20000.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_20000.Position = [692 308 3 349];
+
+            % Create FrequencyLabel
+            app.FrequencyLabel = uilabel(app.UIFigure);
+            app.FrequencyLabel.Position = [1 252 66 22];
+            app.FrequencyLabel.Text = 'Frequency:';
+
+            % Create Label_13
+            app.Label_13 = uilabel(app.UIFigure);
+            app.Label_13.HorizontalAlignment = 'right';
+            app.Label_13.Position = [97 273 26 22];
+            app.Label_13.Text = '125';
+
+            % Create Slider_125
+            app.Slider_125 = uislider(app.UIFigure);
+            app.Slider_125.Limits = [-1 7];
+            app.Slider_125.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_125.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_125.Orientation = 'vertical';
+            app.Slider_125.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_125.Position = [90 308 3 349];
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, '')
+            xlabel(app.UIAxes, 'Frequency (kHz)')
+            ylabel(app.UIAxes, 'Gain (dB)')
+            app.UIAxes.PlotBoxAspectRatio = [4.53697749196141 1 1];
+            app.UIAxes.XLim = [20 20000];
+            app.UIAxes.YLim = [-1 7];
+            app.UIAxes.ZLim = [0 1];
+            app.UIAxes.XTick = [0 125 250 500 1000 2000 3000 4000 6000 8000 12000 20000];
+            app.UIAxes.XTickLabel = {'0'; '125'; '250'; '500'; '1000'; '2000'; '3000'; '4000'; '6000'; '8000'; '12000'; '20000'};
+            app.UIAxes.XMinorTick = 'on';
+            app.UIAxes.YTick = [-1 0 1 2 3 4 5 6 7];
+            app.UIAxes.YTickLabel = {'-10'; '0'; '10'; '20'; '30'; '40'; '50'; '60'; '70'};
+            app.UIAxes.XGrid = 'on';
+            app.UIAxes.YGrid = 'on';
+            app.UIAxes.XScale = 'log';
+            app.UIAxes.HandleVisibility = 'callback';
+            app.UIAxes.Position = [66 24 1001 250];
+
+            % Create PlayButton
+            app.PlayButton = uibutton(app.UIFigure, 'push');
+            app.PlayButton.ButtonPushedFcn = createCallbackFcn(app, @PlayButtonPushed, true);
+            app.PlayButton.Position = [856 593 100 22];
+            app.PlayButton.Text = 'Play';
+
+            % Create StopButton
+            app.StopButton = uibutton(app.UIFigure, 'push');
+            app.StopButton.ButtonPushedFcn = createCallbackFcn(app, @StopButtonPushed, true);
+            app.StopButton.Position = [993 593 100 22];
+            app.StopButton.Text = 'Stop';
+
+            % Create Label_14
+            app.Label_14 = uilabel(app.UIFigure);
+            app.Label_14.HorizontalAlignment = 'right';
+            app.Label_14.Position = [35 280 25 22];
+            app.Label_14.Text = '0';
+
+            % Create Slider_0
+            app.Slider_0 = uislider(app.UIFigure);
+            app.Slider_0.Limits = [-1 7];
+            app.Slider_0.MajorTicks = [-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13];
+            app.Slider_0.MajorTickLabels = {'-10', '0', '10', '20', '30', '40', '50', '60', '70'};
+            app.Slider_0.Orientation = 'vertical';
+            app.Slider_0.ValueChangedFcn = createCallbackFcn(app, @Slider_ValueChanging, true);
+            app.Slider_0.Position = [27 315 3 342];
+
+            % Create Filter1Button
+            app.Filter1Button = uibutton(app.UIFigure, 'push');
+            app.Filter1Button.Position = [856 515 100 22];
+            app.Filter1Button.Text = 'Filter 1';
+
+            % Create Filter2Button
+            app.Filter2Button = uibutton(app.UIFigure, 'push');
+            app.Filter2Button.Position = [993 515 100 22];
+            app.Filter2Button.Text = 'Filter2';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = EqualizerGUI
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            % Execute the startup function
+            runStartupFcn(app, @startupFcn)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
